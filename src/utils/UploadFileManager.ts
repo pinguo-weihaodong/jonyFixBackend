@@ -16,6 +16,7 @@ export default class UploadFileManager {
 	private maxCount = 5
 
 	@observable private currentCount = 0
+	@observable private currentFile = 0
 
 	@observable private queue = []
 
@@ -42,12 +43,12 @@ export default class UploadFileManager {
 		  .update(new Date() + param.filePath)
 		  .digest("hex")
 		//生成上传 Token
-			console.log('key', key, (new Date()).getTime())
+			console.log('key---------', key, (new Date()).getTime())
 		network.request('getUploadAuth', {
 			orderId: param.orderId,
 			eTag: key
 		}, (res)=> {
-			console.log('key_res ', res)
+			console.log('key_res---------------------------', res)
 			// exist:false
 			// expires:1800
 			// token:"5taQL1r-Ldksq6PxHJA68mjtuHROSIKZSwjgr76x:xD-iJjlyW5XIbJ7RncmZsnOngQI=:eyJzY29wZSI6ImMzNjAtbzJvIiwiZGVhZGxpbmUiOjE1MTI1NzcyODksImNhbGxiYWNrVXJsIjoiaHR0cDpcL1wva2FubnktYXBpLWRldi5jYW1lcmEzNjAuY29tXC9jbGllbnRcL3Bob3RvXC9hZGQtb3JkZXItcGhvdG8iLCJjYWxsYmFja0JvZHkiOiJpbWFnZUF2ZT0kKGltYWdlQXZlKSZtaW1lVHlwZT0kKG1pbWVUeXBlKSZzaXplPSQoZnNpemUpJmtleT0kKGtleSkmZXRhZz0kKGV0YWcpJndpZHRoPSQoaW1hZ2VJbmZvLndpZHRoKSZoZWlnaHQ9JChpbWFnZUluZm8uaGVpZ2h0KSZhcHBrZXk9JCh4OmFwcGtleSkmdXNlcklkPSQoeDp1c2VySWQpJnRva2VuPSQoeDp0b2tlbikmYXBwTmFtZT0kKHg6YXBwTmFtZSkmYXBwVmVyc2lvbj0kKHg6YXBwVmVyc2lvbikmc3lzdGVtVmVyc2lvbj0kKHg6c3lzdGVtVmVyc2lvbikmcGxhdGZvcm09JCh4OnBsYXRmb3JtKSZkZXZpY2U9JCh4OmRldmljZSkmbG9jYWxlPSQoeDpsb2NhbGUpJmNoYW5uZWw9JCh4OmNoYW5uZWwpJmVpZD0kKHg6ZWlkKSZjaWQ9JCh4OmNpZCkmbGF0aXR1ZGU9JCh4OmxhdGl0dWRlKSZsb25naXR1ZGU9JCh4OmxvbmdpdHVkZSkmZWZmZWN0PSQoeDplZmZlY3QpJmNhbWVyYU1vZGVsPSQoeDpjYW1lcmFNb2RlbCkmY3JlYXRlRGF0ZVRpbWU9JCh4OmNyZWF0ZURhdGVUaW1lKSZ0eXBlPSQoeDp0eXBlKSZleGlmPSQoeDpjdXN0b21FeGlmKSZjZXJ0VHlwZT0kKHg6Y2VydFR5cGUpJm9yZGVySWQ9JCh4Om9pZCkmcGdpZD0kKHg6cGdpZCkmdWlkPSQoeDp1aWQpJnRhZ0lkPSQoeDp0YWdJZCkmIiwiZW5kVXNlciI6Ilx1NGUwYVx1NWUxZFx1NGUwZFx1NTNkMVx1OGE5MyIsImV4Y2x1c2l2ZSI6MSwiZGV0ZWN0TWltZSI6MSwiZnNpemVMaW1pdCI6NTI0Mjg4MDAsInBlcnNpc3RlbnRPcHMiOiJpbWFnZU1vZ3IyXC9hdXRvLW9yaWVudFwvdGh1bWJuYWlsXC8xMDgweDEwODA-XC9pbnRlcmxhY2VcLzF8c2F2ZWFzXC9Zek0yTUMxdk1tODZNVFJqT1dVNU56a3hObU13T1dVd05XWmhOelkwT0dOaFlURmtPVEEzWldNeE1EZ3c7aW1hZ2VNb2dyMlwvYXV0by1vcmllbnRcL3RodW1ibmFpbFwvMzc1eDM3NT5cL2ludGVybGFjZVwvMXxzYXZlYXNcL1l6TTJNQzF2TW04Nk1UUmpPV1U1TnpreE5tTXdPV1V3TldaaE56WTBPR05oWVRGa09UQTNaV016TnpVPTtpbWFnZU1vZ3IyXC9hdXRvLW9yaWVudFwvdGh1bWJuYWlsXC8xOTIweDE5MjA-XC9pbnRlcmxhY2VcLzF8c2F2ZWFzXC9Zek0yTUMxdk1tODZNVFJqT1dVNU56a3hObU13T1dVd05XWmhOelkwT0dOaFlURmtPVEEzWldNeE9USXc7aW1hZ2VWaWV3MlwvMVwvd1wvMjc5XC9oXC8yNzR8c2F2ZWFzXC9Zek0yTUMxdk1tODZNVFJqT1dVNU56a3hObU13T1dVd05XWmhOelkwT0dOaFlURmtPVEEzWldNeU56bDRNamMwIiwicGVyc2lzdGVudE5vdGlmeVVybCI6Imh0dHA6XC9cL2thbm55LWFwaS1kZXYuY2FtZXJhMzYwLmNvbVwvY2xpZW50XC9waG90b1wvbm90aWZ5In0="
@@ -104,9 +105,9 @@ export default class UploadFileManager {
 	/**
 	 * 文件上传
 	 */
-	uploadFile(param, callback) {
+	uploadFile(param, check, callback) {
 		
-		if (this.currentCount < this.maxCount) {
+		if (this.currentCount < this.maxCount || !check) {
 
 			(() => {
 				let _param = param
@@ -116,15 +117,20 @@ export default class UploadFileManager {
 					this.currentCount -- 
 					let obj = this.queue.pop()
 					if (obj != null) {
-						this.uploadFile(obj.param, obj.callback)
+						this.uploadFile(obj.param, check, obj.callback)
 					}
 				}, (error) => {
-					this.uploadFile(_param, _callback)
+					this.uploadFile(_param, check, _callback)
 				})
 			})()
 	
-		}else {
+		} else {
 			this.queue.push({param: param, callback: callback})
 		}
+	}
+
+	setUploadQueue(param, callback) {
+		this.currentCount ++;
+		this.uploadFile(param, true, callback)
 	}
 }

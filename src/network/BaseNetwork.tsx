@@ -63,12 +63,13 @@ export default class BaseNetwork {
                 let jsonData = JSON.parse(this.singleResString)
                 this.callbackWithData(jsonData)
 
-            }else { //表示还有未接收的数据
+            } else { //表示还有未接收的数据
               this.singleReqeustComplete = false
             }
 
         }else {
             this.singleResString += buffer.toString()
+            console.log(buffer.length, BaseNetwork.COUNTBYTELENGTH, this.singleResTotalLength)
             if ((this.singleResString.length + BaseNetwork.COUNTBYTELENGTH) == this.singleResTotalLength) {
                 let jsonData = JSON.parse(this.singleResString)
                 this.callbackWithData(jsonData)

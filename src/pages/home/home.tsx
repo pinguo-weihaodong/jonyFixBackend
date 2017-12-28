@@ -57,7 +57,8 @@ export default class Home extends BaseView {
 
 	@action fetchOrderList() {
 		this.isLoading = true
-		this.userStore.getOrderList({isBlock: 1}, (res) => {
+		// this.userStore.getOrderList({isBlock: 1}, (res) => {
+		this.userStore.getOrderList(null, (res) => {
 			this.isLoading = false
 			if (res.error_code == 0) {
 				console.log(res)

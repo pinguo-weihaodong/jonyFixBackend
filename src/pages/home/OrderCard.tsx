@@ -69,7 +69,8 @@ export default class OrderCard extends React.Component<PassedProps> {
 
 	fetchOrderPhotoList() {
 		console.log("fetchOrderPhotoList--------" + this.order.orderId)
-		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId, isBlock: 1}, (res) => {
+		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId, isBlock: 1}, (res) => {
+		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId}, (res) => {
 			console.log(res)
 			if (res.error_code == 0) {
 				var data = this.storage.getData()
@@ -111,6 +112,42 @@ export default class OrderCard extends React.Component<PassedProps> {
 	private uploadFileCountTimer
 
 	componentDidMount() {
+		if (this.order.orderId == '201712212112199392') {
+			let max = 1, current = 0, num = 0, queue = []
+			
+			let setQueue = (index, check) => {
+				num ++;
+				if (max >= num || !check) {
+					(() => {
+						console.log(index)
+						current ++;
+						setTimeout(() => {
+							num --
+							console.log(num)
+							// console.log(queue[current])
+							setQueue(queue[current], false)
+						}, 1000)
+					})()
+				} else {
+					queue.push(index)
+				}
+				// setTimeout(() => {
+				// 	current ++
+				// 	if (queue.length >= current) {
+				// 		console.log(index)
+				// 		setQueue(queue[current])
+				// 	}
+				// }, 1900)
+			}
+
+			for (let i = 0; i < 10; i++) {
+				setQueue(i + '----i-------', true)
+			}
+		}
+
+
+
+
 		let uploadNum = 0,
 			uploadedNum = 0,
 			downloadNum = 0,
@@ -217,7 +254,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 			this.userStore.isWatching = true;
 			let jonyFixDirPath = fileManager.jonyFixDirPath
 			watchs.watchTree(jonyFixDirPath, (filename, curr, prev) => {
-				console.log(filename, curr, prev)
+				// console.log(filename, curr, prev)
 				if (typeof filename == "object" && prev === null && curr === null) {
 					// Finished walking the tree
 				} else if (prev === null) {
@@ -226,7 +263,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 					if (filename.indexOf("DS_Store") > -1) {
 						return
 					}
-					console.log(filename)
 					// console.log(filename, curr, prev)
 					let picName = path.basename(filename)
 					let etag = picName.split('.')[0],
@@ -242,7 +278,9 @@ export default class OrderCard extends React.Component<PassedProps> {
 					}
 
 					// 新建上传目录时会进入判断
-					if (filename.indexOf('上传目录') >= 0 && filename.indexOf('上传目录') != paths[paths.length - 2]) {
+					if ('上传目录' == paths[paths.length - 3]) {
+						console.log(filename)
+						// console.log(paths)
 
 						if (suffix.toLowerCase() != 'jpg' && suffix.toLowerCase() != 'jpeg') {
 							errorHandler.handleErrorCode(10, picName + '格式不正确')
@@ -276,7 +314,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 							}
 						})
 
-					} else if (filename.indexOf('下载目录') >= 0 && filename.indexOf('下载目录') != paths[paths.length - 2]) {
+					} else if ('下载目录' == paths[paths.length - 3]) {
 						// console.log(filename, '下载目录')
 						if (data[orderId][etag] && !data[orderId][etag]['downloaded']) {
 							data[orderId][etag]['downloaded'] = true
