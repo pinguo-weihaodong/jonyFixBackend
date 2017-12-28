@@ -69,8 +69,8 @@ export default class OrderCard extends React.Component<PassedProps> {
 
 	fetchOrderPhotoList() {
 		console.log("fetchOrderPhotoList--------" + this.order.orderId)
-		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId, isBlock: 1}, (res) => {
-		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId}, (res) => {
+		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId, isBlock: 1}, (res) => {
+		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId}, (res) => {
 			console.log(res)
 			if (res.error_code == 0) {
 				var data = this.storage.getData()
@@ -112,42 +112,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 	private uploadFileCountTimer
 
 	componentDidMount() {
-		if (this.order.orderId == '201712212112199392') {
-			let max = 1, current = 0, num = 0, queue = []
-			
-			let setQueue = (index, check) => {
-				num ++;
-				if (max >= num || !check) {
-					(() => {
-						console.log(index)
-						current ++;
-						setTimeout(() => {
-							num --
-							console.log(num)
-							// console.log(queue[current])
-							setQueue(queue[current], false)
-						}, 1000)
-					})()
-				} else {
-					queue.push(index)
-				}
-				// setTimeout(() => {
-				// 	current ++
-				// 	if (queue.length >= current) {
-				// 		console.log(index)
-				// 		setQueue(queue[current])
-				// 	}
-				// }, 1900)
-			}
-
-			for (let i = 0; i < 10; i++) {
-				setQueue(i + '----i-------', true)
-			}
-		}
-
-
-
-
 		let uploadNum = 0,
 			uploadedNum = 0,
 			downloadNum = 0,
@@ -254,7 +218,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 			this.userStore.isWatching = true;
 			let jonyFixDirPath = fileManager.jonyFixDirPath
 			watchs.watchTree(jonyFixDirPath, (filename, curr, prev) => {
-				// console.log(filename, curr, prev)
 				if (typeof filename == "object" && prev === null && curr === null) {
 					// Finished walking the tree
 				} else if (prev === null) {

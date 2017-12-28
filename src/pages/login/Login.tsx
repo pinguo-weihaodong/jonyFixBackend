@@ -46,60 +46,6 @@ export default class Login extends BaseView {
     }
     
     componentDidMount() {
-        let max = 5, current = 0, num = 0, queue = []
-        
-        let setQueue = (index, check) => {
-            if (max >= num || !check) {
-                (() => {
-                    console.log('index----', index)
-                    // console.log('current----', current)
-                    setTimeout(() => {
-                        num --
-                        console.log(num)
-                        // console.log(queue[current])
-                        if (current < queue.length) {
-                            setQueue(queue[current], false)
-                            current ++;
-                        }
-                    }, 1000)
-                })()
-            } else {
-                queue.push(index)
-                // console.log(queue)
-            }
-            // setTimeout(() => {
-            // 	current ++
-            // 	if (queue.length >= current) {
-            // 		console.log(index)
-            // 		setQueue(queue[current])
-            // 	}
-            // }, 1900)
-        }
-
-        let startQueue = (index, check) => {
-            num ++;
-            setQueue(index, check)
-        }
-        let stack = []
-        let times = 0
-        let timer = setInterval(() => {
-            if (times >= 3) {
-                clearInterval(timer)
-            } else {
-                for (let i = 0; i < 10; i++) {
-                    startQueue(times + '' + i + '----i-------', true)
-                    stack.push(times + '' + i + '----i-------')
-                }
-                // console.log(stack)
-            }
-            times ++
-        }, 100)
-
-        setTimeout(() => {
-            for (let i = 0; i < 10; i++) {
-                startQueue(times + '' + i + '----i-------', true)
-            }
-        }, 15000);
 
         document.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {

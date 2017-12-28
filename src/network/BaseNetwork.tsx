@@ -30,15 +30,39 @@ export default class BaseNetwork {
 
   isConnected:boolean = false
 
-  singleReqeustComplete: boolean = true
-
   singleResTotalLength: number = 0
-
-  singleResString: string = ""
 
   prevRequests = []
 
+  cacheBuffer: Buffer = Buffer.alloc(0)
+
   static COUNTBYTELENGTH: number = 4
+
+    asembleData(data: Buffer) {
+        let buffer = Buffer.from(data)
+        this.cacheBuffer = Buffer.concat([this.cacheBuffer, buffer], this.cacheBuffer.length + buffer.length)
+        this.parseData(this.cacheBuffer)
+    }
+
+    parseData(dataBuffer: Buffer) {
+        if (dataBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
+
+            this.singleResTotalLength = dataBuffer.readUIntBE(0, BaseNetwork.COUNTBYTELENGTH)
+
+            if (dataBuffer.length >= this.singleResTotalLength) {
+                let singleDataBuffer = dataBuffer.slice(BaseNetwork.COUNTBYTELENGTH, this.singleResTotalLength)
+                let resDataString = singleDataBuffer.toString()
+                let jsonData = JSON.parse(resDataString)
+                this.callbackWithData(jsonData)
+
+                this.cacheBuffer = dataBuffer.slice(this.singleResTotalLength, dataBuffer.length)
+                if (this.cacheBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
+                    this.parseData(this.cacheBuffer)
+                }
+            }
+
+        }
+    }
 
   connect(url, port) {
     if (!this.so) {
@@ -49,34 +73,9 @@ export default class BaseNetwork {
           allowHalfOpen: false
       })
 
-      this.so.on('data', (res) => {
-        var buffer = Buffer.from(res)
-        console.log(buffer.length)
-        if (this.singleReqeustComplete) {
 
-            this.singleResTotalLength = buffer.readUIntBE(0, BaseNetwork.COUNTBYTELENGTH)
-            var dataBuffer = buffer.slice(BaseNetwork.COUNTBYTELENGTH, buffer.length)
-            this.singleResString = dataBuffer.toString()
-            console.log(buffer.length, this.singleResTotalLength)
-            //表示是一次完整的请求
-            if (this.singleResTotalLength == buffer.length) {
-                let jsonData = JSON.parse(this.singleResString)
-                this.callbackWithData(jsonData)
-
-            } else { //表示还有未接收的数据
-              this.singleReqeustComplete = false
-            }
-
-        }else {
-            this.singleResString += buffer.toString()
-            console.log(buffer.length, BaseNetwork.COUNTBYTELENGTH, this.singleResTotalLength)
-            if ((this.singleResString.length + BaseNetwork.COUNTBYTELENGTH) == this.singleResTotalLength) {
-                let jsonData = JSON.parse(this.singleResString)
-                this.callbackWithData(jsonData)
-                this.singleReqeustComplete = true
-            }
-        }
-
+      this.so.on('data', (res:Buffer) => {
+            this.asembleData(res)
       })
         
       this.so.on('close', () => {
@@ -128,8 +127,6 @@ export default class BaseNetwork {
 
   reset() {
       this.isConnected = false
-      this.singleReqeustComplete = false
-      this.singleResString = ""
       this.singleResTotalLength = 0
   }
 
@@ -139,7 +136,7 @@ export default class BaseNetwork {
             var callbackCache = {}
             callbackCache['sign'] = sign
             callbackCache['callback'] = callback
-            this.callbacks.push(callbackCache)
+            this.callbacks.unshift(callbackCache)
         }
 
         this.so.write(data, 'utf-8')
@@ -156,7 +153,6 @@ export default class BaseNetwork {
   }
 
   callbackWithData(data) {
-      console.log(data)
     if (data.code == this.methodMap.receivePhoto) {
         if (data.error_code == 0) {
 
@@ -187,12 +183,13 @@ export default class BaseNetwork {
                 let callback = obj['callback']
                 callback && callback(data)
                 excuteIndex = index
+                return
             }
         })
     
-        if (excuteIndex >= 0) {
-            this.callbacks.splice(excuteIndex, 1)
-        }
+        // if (excuteIndex >= 0) {
+        //     this.callbacks.splice(excuteIndex, 1)
+        // }
     }
       
   }
