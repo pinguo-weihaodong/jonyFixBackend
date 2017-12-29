@@ -225,8 +225,20 @@ export default class OrderCard extends React.Component<PassedProps> {
 							return
 						}
 
-						if (data[orderId][etag] && !data[orderId][etag]['upload']) {
-							data[orderId][etag]['upload'] = true
+						if (data[orderId][etag]) {
+							if (!data[orderId][etag]['upload']) {
+								data[orderId][etag]['upload'] = true
+								this.storage.setData(data)
+								events.emit("watchDirUploaded" + orderId);
+							}
+						} else {
+							let imageObj = {
+								orderId: orderId,
+								etag: etag,
+								tagID: tagId,
+								upload: true
+							}
+							data[orderId][etag] = imageObj
 							this.storage.setData(data)
 							events.emit("watchDirUploaded" + orderId);
 						}

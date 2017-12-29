@@ -64,6 +64,7 @@ export default class Home extends BaseView {
 		// this.userStore.getOrderList(null, (res) => {
 			this.isLoading = false
 			if (res.error_code == 0) {
+				// console.log(res.data.list)
 				this.userStore.orderList = this.userStore.orderList.concat(res.data.list)
 				// console.log('this.userStore.orderList', this.userStore.orderList)
 					

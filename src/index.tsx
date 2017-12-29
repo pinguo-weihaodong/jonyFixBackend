@@ -12,12 +12,7 @@ import os from 'os'
 import BaseStore from './stores/BaseStore'
 import Home from './pages/home/home'
 import Login from './pages/login/Login'
-
-//生成文件夹，打开文件夹
-fs.mkdir(os.homedir() + '/Desktop/jiani', (err) => {
-  //shell.openItem(os.homedir() + '/Desktop/jiani')
-  //shell.openExternal('https://github.com');
-})
+import Test from './pages/Test'
 
 const Menu = remote.Menu
 const MenuItem = remote.MenuItem
@@ -38,6 +33,7 @@ var component = <Provider userStore={baseStore.userStore} baseStore={baseStore} 
                     <Route path="/" component={baseStore.userStore.isLogin? Home: Login} />
                     <Route path="home" component={Home} />
                     <Route path="login" component={Login} />
+                    <Route path="test" component={Test} />
                   </Router>
                 </Provider>
 ReactDOM.render(component, document.getElementById('root'))
