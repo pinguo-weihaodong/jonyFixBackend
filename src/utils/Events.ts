@@ -37,4 +37,9 @@ export default class Events {
         // console.log(this.emitter)
     }
 
+    removeAll() {
+        this.emitter.removeAllListeners();
+        // console.log(this.emitter)
+    }
+
 }

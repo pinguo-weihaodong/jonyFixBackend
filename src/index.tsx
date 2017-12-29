@@ -3,6 +3,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Router, Route, hashHistory } from 'react-router'
 import { Provider } from "mobx-react"
+import isDev from "electron-is-dev"
 
 import { remote, shell } from 'electron'
 import fs from 'fs'
@@ -44,5 +45,12 @@ ReactDOM.render(component, document.getElementById('root'))
 import Network from './network/Network'
 const network = Network.sharedInstance()
 
-network.connect('jony-fix-dev.camera360.com', 7373)
+
+if (isDev) {
+    network.connect('jony-fix-dev.camera360.com', 7373)
+  } else {
+    // network.connect('jony-fix.camera360.com', 7373)
+    network.connect('jony-fix-dev.camera360.com', 7373)
+}
+
 // network.connect('10.1.17.204', 7373)

@@ -13,7 +13,7 @@ export default class UploadFileManager {
 	constructor() {
 	}
 	
-	private maxCount = 5
+	private maxCount = 10
 
 	@observable private currentCount = 0
 	@observable private currentFile = 0
@@ -107,33 +107,36 @@ export default class UploadFileManager {
 	 */
 	uploadFile(param, callback) {
 		this.currentCount ++;
-		this.startUploadQueue(param, true, callback)
+		this.startUploadQueue({
+			param: param,
+			check: true,
+			callback: callback
+		})
 	}
 
-	startUploadQueue(param, check, callback) {
-		
-		if (this.maxCount >= this.currentCount || !check) {
+	startUploadQueue(uploadInfo) {
+		let _uploadInfo = Object.assign({}, uploadInfo)
+		_uploadInfo["check"] = false
+		if (this.maxCount >= this.currentCount || !uploadInfo.check) {
 
 			(() => {
-				let _param = param
-				let _callback = callback
-				this.uploadToQiniu(_param, (res) => {
+				this.uploadToQiniu(_uploadInfo.param, (res) => {
 					this.currentCount -- 
-					_callback && _callback(res)
+					_uploadInfo.callback && _uploadInfo.callback(res)
 					if (this.currentFile < this.queue.length) {
 						let obj = this.queue[this.currentFile]
 						if (obj != null) {
-							this.startUploadQueue(obj.param, false, obj.callback)
+							this.startUploadQueue(obj)
 							this.currentFile ++;
 						}
 					}
 				}, (error) => {
-					this.startUploadQueue(_param, false, _callback)
+					this.startUploadQueue(_uploadInfo)
 				})
 			})()
 	
 		} else {
-			this.queue.push({param: param, callback: callback})
+			this.queue.push(_uploadInfo)
 		}
 
 

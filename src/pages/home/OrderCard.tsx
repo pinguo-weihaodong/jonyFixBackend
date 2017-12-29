@@ -68,29 +68,28 @@ export default class OrderCard extends React.Component<PassedProps> {
 	@observable order: any
 
 	fetchOrderPhotoList() {
-		console.log("fetchOrderPhotoList--------" + this.order.orderId)
-		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId, isBlock: 1}, (res) => {
-		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: this.order.orderId}, (res) => {
-			console.log(res)
+		// console.log("fetchOrderPhotoList--------" + this.order.orderId)
+		let orderId = this.order.orderId
+		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId, isBlock: 1}, (res) => {
+		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId}, (res) => {
+			// console.log(res)
 			if (res.error_code == 0) {
-				var data = this.storage.getData()
-				let orderId = this.order.orderId
+				let data = Object.assign({}, this.storage.getData())
 				if (!data[orderId]) {
 					data[orderId] = {}
 				}
-				for (let index = 0; index < res.data.length; index++) {
-					let imageObj = res.data[index];
-					if (data[orderId][imageObj.etag] && !data[orderId][imageObj.etag]['download']) {
-						data[orderId][imageObj.etag]['download'] = true
-					}
+				for (let index in res.data.list) {
+					let imageObj = res.data.list[index];
 					if (!data[orderId][imageObj.etag] || !data[orderId][imageObj.etag]['downloaded']) {
 						data[orderId][imageObj.etag] = imageObj
+						data[orderId][imageObj.etag]['download'] = true
 						let savePath = fileManager.getTagDirPath(this.order.orderId, imageObj) + '/' + imageObj.etag + '.jpg'
 						downloadFileManager.downloadFile('https://c360-o2o.c360dn.com/' + imageObj.etag, savePath)
 					}
 				}
-
+				// console.log(data)
 				this.storage.setData(data)
+				this.setDownloadFileTotal()
 			}
 		})
 	}
@@ -117,8 +116,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 			downloadNum = 0,
 			downloadedNum = 0
 		let orderPics = this.storage.getData()[this.order.orderId]
-		// console.log(orderPics, (new Date()).getTime())
-		// console.log(this.storage.getData())
 		for (let key in orderPics) {
 			if (orderPics[key].upload) {
 				uploadNum ++
@@ -139,7 +136,19 @@ export default class OrderCard extends React.Component<PassedProps> {
 			downloadNum: downloadedNum,
 			downloadTotal: downloadNum
 		})
-		// this.setUploadTotal()
+	}
+
+	setDownloadFileTotal() {
+		let downloadNum = 0
+		let orderPics = this.storage.getData()[this.order.orderId]
+		for (let key in orderPics) {
+			if (orderPics[key].download) {
+				downloadNum ++
+			}
+		}
+		this.setState({
+			downloadTotal: downloadNum
+		})
 	}
 	  
 	addFileUploadListener() {
@@ -176,41 +185,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 		events.remove("watchFileDownloaded" + this.order.orderId)
 	}
 
-	setUploadTotal() {
-		// console.log(this.order.orderId)
-		clearTimeout(this.uploadFileCountTimer)
-		this.uploadFileCountTimer = setTimeout(() => {
-			clearTimeout(this.uploadFileCountTimer)
-			// let uploadNum = 0
-			// let orderPics = this.storage.getData()[this.order.orderId]
-			// // console.log(orderPics, (new Date()).getTime())
-			// // console.log(orderPics, this.order.orderId)
-			// for (let key in orderPics) {
-			// 	if (orderPics[key].upload) {
-			// 		uploadNum ++
-			// 	}
-			// }
-			// this.setState({
-			// 	uploadTotal: uploadNum
-			// })
-			// let path = fileManager.getUploadDirPath(this.order.orderId)
-			// // console.log(this.order.orderId)
-			// try {
-			// 	let files = fs.readdirSync(path)
-			// 	let _jpgFileLength = 0
-			// 	for (let i = 0; i < files.length; i++) {
-			// 		const file = files[i];
-			// 		if (file.toLowerCase().indexOf('.jpg') > -1 || file.toLowerCase().indexOf('.jpeg') > -1) {
-			// 			_jpgFileLength ++
-			// 		}
-			// 	}
-			// 	this.setState({
-			// 		uploadTotal: _jpgFileLength
-			// 	})
-			// } catch (error) {}
-		}, 500)
-	}
-
 	watchDir() {
 		this.addFileUploadListener()
 		this.addFileDownloadListener()
@@ -218,6 +192,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 			this.userStore.isWatching = true;
 			let jonyFixDirPath = fileManager.jonyFixDirPath
 			watchs.watchTree(jonyFixDirPath, (filename, curr, prev) => {
+				// console.log(filename, curr, prev, '---------')
 				if (typeof filename == "object" && prev === null && curr === null) {
 					// Finished walking the tree
 				} else if (prev === null) {
@@ -242,7 +217,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 
 					// 新建上传目录时会进入判断
 					if ('上传目录' == paths[paths.length - 3]) {
-						console.log(filename)
+						// console.log(filename)
 						// console.log(paths)
 
 						if (suffix.toLowerCase() != 'jpg' && suffix.toLowerCase() != 'jpeg') {

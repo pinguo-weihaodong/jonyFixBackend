@@ -15,9 +15,11 @@ import BaseView from '../../components/BaseView'
 import Button from '../../components/Button'
 import JLocalStorage from '../../utils/JlocalStorage'
 import FileManager from '../../utils/FileManager'
+import Events from '../../utils/Events'
 
 const errorHandler = ErrorHandler.sharedInstance()
 const fileManager = FileManager.sharedInstance()
+const events = Events.sharedInstance()
 
 useStrict(false)
 
@@ -38,6 +40,7 @@ export default class Home extends BaseView {
 	@observable currentContent: any
 	@observable avatar: any
 	@observable nickname: any
+	@observable isLoading: boolean = false
 
 	state = {
 		orderList: []
@@ -62,14 +65,16 @@ export default class Home extends BaseView {
 			this.isLoading = false
 			if (res.error_code == 0) {
 				this.userStore.orderList = this.userStore.orderList.concat(res.data.list)
-				this.setState({
-					orderList: this.userStore.orderList
-				})
-				
-				for (let i = 0; i < res.data.list.length; i++) {
-					const orderItem = res.data.list[i];
-					if (orderItem.orderStatus == OrderStatus.started) {
-						fileManager.createOrderDir(orderItem)
+				// console.log('this.userStore.orderList', this.userStore.orderList)
+					
+					this.setState({
+						orderList: this.userStore.orderList
+					})
+					
+					for (let i = 0; i < res.data.list.length; i++) {
+						const orderItem = res.data.list[i];
+						if (orderItem.orderStatus == OrderStatus.started) {
+							fileManager.createOrderDir(orderItem)
 					}
 				}
 			} else {
@@ -81,6 +86,8 @@ export default class Home extends BaseView {
 	@action logoutClick = (e) => {
 		this.userStore.isLogin = false
 		this.userStore.uuid = ""
+		this.userStore.orderList = []
+		events.removeAll()
 		hashHistory.replace('login')
 	}
 
@@ -97,13 +104,33 @@ export default class Home extends BaseView {
 				</div>
 				<div className="title">修图列表</div>
 			</div>
-			<div className="mainContainer">
-				<div className="orderContainer">
-					{ this.state.orderList.map((order, index) => {
-						return <OrderCard key={index} order={order} />
-					}) }
+			{
+				this.isLoading ?
+				<div className="loading">
+					{
+						// <img className="loadingPic" src="../src/assets/images/order_blank.png" alt=""/>
+					}
+					<div className="loadingText">
+						loading...
+					</div>
+				</div> :
+				this.state.orderList.length == 0 ? 
+				<div className="emptyWrapper">
+					<img className="emptyPic" src="../src/assets/images/order_blank.png" alt=""/>
+					<div className="emptyText">
+						暂无订单
+					</div>
+				</div>  :
+				<div className="mainContainer">
+					<div className="orderContainer">
+					{
+						this.state.orderList.map((order, index) => {
+							return <OrderCard key={index} order={order} />
+						})
+					}
+					</div>
 				</div>
-			</div>
+			}
 		</div>
 	}
 }
