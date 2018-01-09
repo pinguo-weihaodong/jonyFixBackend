@@ -112,6 +112,10 @@ export default class UserStore<BaseStore> {
         network.request('endFix', param, callback)
     }
 
+    pulseCheck(param, callback) {
+        network.request('pulseCheck', param, callback)
+    }
+
 }
 
 // Invite:"9cR0VA4v"

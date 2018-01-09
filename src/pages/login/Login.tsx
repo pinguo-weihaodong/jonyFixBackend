@@ -33,6 +33,8 @@ export default class Login extends BaseView {
 
     verifyCode: number
     
+    pulseCheckTimer: any
+    
     private verifyCodeTimer:any
     @observable verifyLoading:boolean = false
     @observable verifyText:string = "获取验证码"
@@ -54,10 +56,15 @@ export default class Login extends BaseView {
                 }
             }
         })
+
+        this.pulseCheckTimer = setInterval(() => {
+            this.store.pulseCheck(null, ()=>{})
+        }, 15000)
     }
 
     componentWillUnmount() {
         clearInterval(this.verifyCodeTimer)
+        clearInterval(this.pulseCheckTimer)
     }
     
     handleVerifyCodeChange(event) {

@@ -18,7 +18,7 @@ const Menu = remote.Menu
 const MenuItem = remote.MenuItem
 
 var menu = new Menu()
-menu.append(new MenuItem({ label: '刷新', click: function() { window.location.reload() } }))
+// menu.append(new MenuItem({ label: '刷新', click: function() { window.location.reload() } }))
 // menu.append(new MenuItem({ type: 'separator' }))
 // menu.append(new MenuItem({ label: 'MenuItem2', type: 'checkbox', checked: true }))
 window.addEventListener('contextmenu', function (e) {
@@ -43,10 +43,10 @@ const network = Network.sharedInstance()
 
 
 if (isDev) {
-    network.connect('jony-fix-dev.camera360.com', 7373)
+    network.connect('jony-fix.camera360.com', 7373)
+    // network.connect('jony-fix-dev.camera360.com', 7373)
   } else {
-    // network.connect('jony-fix.camera360.com', 7373)
-    network.connect('jony-fix-dev.camera360.com', 7373)
+    network.connect('jony-fix.camera360.com', 7373)
 }
 
 // network.connect('10.1.17.204', 7373)

@@ -37,6 +37,8 @@ export default class Home extends BaseView {
 	baseStore: BaseStore
 	userStore: UserStore<BaseStore>
 
+	pulseCheckTimer: any
+
 	@observable currentContent: any
 	@observable avatar: any
 	@observable nickname: any
@@ -55,6 +57,16 @@ export default class Home extends BaseView {
 		this.nickname = this.userStore.nickname
 		this.fetchOrderList()
 	}
+
+    componentDidMount() {
+        this.pulseCheckTimer = setInterval(() => {
+            this.userStore.pulseCheck(null, ()=>{})
+        }, 15000)
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.pulseCheckTimer)
+    }
 
 	storage: JLocalStorage
 

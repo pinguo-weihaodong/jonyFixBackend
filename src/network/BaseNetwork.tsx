@@ -11,6 +11,7 @@ export default class BaseNetwork {
     }
 
     methodMap = {
+        pulseCheck: 10001,
         verifyCode: 10002,
         login: 10000,
         orderList: 10003,
@@ -81,7 +82,7 @@ export default class BaseNetwork {
             
         this.so.on('close', () => {
             this.reset()
-            //   console.log('socket is close')
+              console.log('socket is close')
             if (confirm('网络连接已经断开，请重新连接')){
                     setTimeout(() => {
                         this.so.destroy()
@@ -94,7 +95,7 @@ export default class BaseNetwork {
             
         this.so.on('error', (err) => {
             this.reset()
-            //   console.log('socket is error:' + err)
+              console.log('socket is error:' + err)
             //   if (confirm('网络连接已经断开，请重新连接')){
             //       setTimeout(() => {
             //         this.so = null
@@ -104,7 +105,7 @@ export default class BaseNetwork {
         })
 
         this.so.on('connect', () => {
-                // console.log('socket is connected')
+                console.log('socket is connected')
                 this.isConnected = true
                 this.prevRequests.map((obj, index) => {
                     this.sendData(obj['method'], obj['data'], obj['callback'], obj['sign'])
@@ -116,7 +117,7 @@ export default class BaseNetwork {
 
         //   this.so.setTimeout(15000)
         //   this.so.on('timeout', () => {
-        //     console.log('socket timeout')
+            console.log('socket timeout')
         //     this.so.end()
         //   });
 
@@ -154,7 +155,7 @@ export default class BaseNetwork {
     }
 
     callbackWithData(data) {
-        // console.log(data)
+        console.log(data)
         if (data.code == this.methodMap.receivePhoto) {
             if (data.error_code == 0) {
 

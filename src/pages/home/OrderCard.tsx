@@ -1,5 +1,6 @@
 
 import fs from 'fs'
+import os from 'os'
 import * as ReactDOM from 'react-dom'
 import React from 'react'
 import { observer, inject } from "mobx-react"
@@ -68,7 +69,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 	@observable order: any
 
 	fetchOrderPhotoList() {
-		// console.log("fetchOrderPhotoList--------" + this.order.orderId)
+		console.log("fetchOrderPhotoList--------" + this.order.orderId)
 		let orderId = this.order.orderId
 		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId, isBlock: 1}, (res) => {
 		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId}, (res) => {
@@ -83,7 +84,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 					if (!data[orderId][imageObj.etag] || !data[orderId][imageObj.etag]['downloaded']) {
 						data[orderId][imageObj.etag] = imageObj
 						data[orderId][imageObj.etag]['download'] = true
-						let savePath = fileManager.getTagDirPath(this.order.orderId, imageObj) + '/' + imageObj.etag + '.jpg'
+						let savePath = fileManager.getTagDirPath(orderId, imageObj) + '/' + imageObj.etag + '.jpg'
 						downloadFileManager.downloadFile('https://c360-o2o.c360dn.com/' + imageObj.etag, savePath)
 					}
 				}
@@ -192,7 +193,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 			this.userStore.isWatching = true;
 			let jonyFixDirPath = fileManager.jonyFixDirPath
 			watchs.watchTree(jonyFixDirPath, (filename, curr, prev) => {
-				// console.log(filename, curr, prev, '---------')
+				console.log(filename, curr, prev, '---------')
 				if (typeof filename == "object" && prev === null && curr === null) {
 					// Finished walking the tree
 				} else if (prev === null) {
@@ -205,7 +206,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 					let picName = path.basename(filename)
 					let etag = picName.split('.')[0],
 						suffix = picName.split('.')[1]
-					let paths = filename.split('/')
+					let paths = os.platform() == "win32" ? filename.split('\\') :  filename.split('/')
 					let orderId = paths[paths.length - 4]
 					let tagId = paths[paths.length - 2].split('-')[1]
 					// console.log(etag, suffix, paths, orderId, tagId)
@@ -309,6 +310,10 @@ export default class OrderCard extends React.Component<PassedProps> {
 		let hour = date.getHours() > 9 ? date.getHours() : '0' + date.getHours()
 		let min = date.getMinutes() > 9 ? date.getMinutes() : '0' + date.getMinutes()
 		return <div className="orderWrapper">
+			{
+				this.order.orderStatus == OrderStatus.started ?
+				<Button className="refresh" onClick={this.fetchOrderPhotoList.bind(this)}>刷新</Button> : null
+			}
 			<img className="orderBanner" src={this.order.banner} alt=""
 				style={{
 					backgroundImage:'url('+ this.order.banner +')',
