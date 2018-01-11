@@ -29,12 +29,13 @@ export default class DownloadFileManager {
         return DownloadFileManager.sManager
     }
 
-    downloadFile(url, path) {
+    downloadFile(url, path, callback) {
 		this.currentCount ++;
 		this.startUploadQueue({
             url: url,
             path: path,
-            check: true
+            check: true,
+            callback: callback
         })
     }
 
@@ -51,8 +52,9 @@ export default class DownloadFileManager {
                         // console.log(err);
                         this.startUploadQueue(_downloadInfo)
 
-                    }else {
+                    } else {
                         this.currentCount -- 
+                        _downloadInfo.callback && _downloadInfo.callback(res)
                         if (this.currentFile < this.queue.length) {
                             let obj = this.queue[this.currentFile]
                             if (obj != null) {

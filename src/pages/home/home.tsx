@@ -76,7 +76,7 @@ export default class Home extends BaseView {
 		// this.userStore.getOrderList(null, (res) => {
 			this.isLoading = false
 			if (res.error_code == 0) {
-				// console.log(res.data.list)
+				console.log(res.data.list)
 				this.userStore.orderList = this.userStore.orderList.concat(res.data.list)
 				// console.log('this.userStore.orderList', this.userStore.orderList)
 					
@@ -98,7 +98,7 @@ export default class Home extends BaseView {
 
 	@action logoutClick = (e) => {
 		this.userStore.isLogin = false
-		this.userStore.uuid = ""
+		// this.userStore.uuid = ""
 		this.userStore.orderList = []
 		events.removeAll()
 		hashHistory.replace('login')

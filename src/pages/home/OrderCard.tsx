@@ -8,6 +8,7 @@ import { observable, autorun, useStrict, action } from 'mobx'
 import { remote, shell } from 'electron'
 import watchs from 'watch'
 import path from 'path'
+import { Modal, Icon } from 'antd'
 
 import BaseStore from '../../stores/BaseStore'
 import MenuStore from '../../stores/MenuStore'
@@ -67,12 +68,13 @@ export default class OrderCard extends React.Component<PassedProps> {
 	userStore: any
 
 	@observable order: any
+	@observable isDownloading: number = 0
+	@observable isUploading: number = 0
 
 	fetchOrderPhotoList() {
 		console.log("fetchOrderPhotoList--------" + this.order.orderId)
 		let orderId = this.order.orderId
 		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId, isBlock: 1}, (res) => {
-		// this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId}, (res) => {
 			// console.log(res)
 			if (res.error_code == 0) {
 				let data = Object.assign({}, this.storage.getData())
@@ -84,8 +86,11 @@ export default class OrderCard extends React.Component<PassedProps> {
 					if (!data[orderId][imageObj.etag] || !data[orderId][imageObj.etag]['downloaded']) {
 						data[orderId][imageObj.etag] = imageObj
 						data[orderId][imageObj.etag]['download'] = true
+						this.isDownloading ++
 						let savePath = fileManager.getTagDirPath(orderId, imageObj) + '/' + imageObj.etag + '.jpg'
-						downloadFileManager.downloadFile('https://c360-o2o.c360dn.com/' + imageObj.etag, savePath)
+						downloadFileManager.downloadFile('https://c360-o2o.c360dn.com/' + imageObj.etag, savePath, (status) => {
+							this.isDownloading --
+						})
 					}
 				}
 				// console.log(data)
@@ -194,104 +199,121 @@ export default class OrderCard extends React.Component<PassedProps> {
 			let jonyFixDirPath = fileManager.jonyFixDirPath
 			watchs.watchTree(jonyFixDirPath, (filename, curr, prev) => {
 				console.log(filename, curr, prev, '---------')
+
+				// 初始化，检测本地文件是否已经上传或下载
 				if (typeof filename == "object" && prev === null && curr === null) {
-					// Finished walking the tree
-				} else if (prev === null) {
-					// f is a new file
-					// 排除mac上DS_Store文件
-					if (filename.indexOf("DS_Store") > -1) {
-						return
-					}
-					// console.log(filename, curr, prev)
-					let picName = path.basename(filename)
-					let etag = picName.split('.')[0],
-						suffix = picName.split('.')[1]
-					let paths = os.platform() == "win32" ? filename.split('\\') :  filename.split('/')
-					let orderId = paths[paths.length - 4]
-					let tagId = paths[paths.length - 2].split('-')[1]
-					// console.log(etag, suffix, paths, orderId, tagId)
-
-					let data = this.storage.getData()
-					if (!data[orderId]) {
-						data[orderId] = {}
-					}
-
-					// 新建上传目录时会进入判断
-					if ('上传目录' == paths[paths.length - 3]) {
-						// console.log(filename)
-						// console.log(paths)
-
-						if (suffix.toLowerCase() != 'jpg' && suffix.toLowerCase() != 'jpeg') {
-							errorHandler.handleErrorCode(10, picName + '格式不正确')
-							return
-						}
-
-						if (data[orderId][etag]) {
-							if (!data[orderId][etag]['upload']) {
-								data[orderId][etag]['upload'] = true
-								this.storage.setData(data)
-								events.emit("watchDirUploaded" + orderId);
-							}
-						} else {
-							let imageObj = {
-								orderId: orderId,
-								etag: etag,
-								tagID: tagId,
-								upload: true
-							}
-							data[orderId][etag] = imageObj
-							this.storage.setData(data)
-							events.emit("watchDirUploaded" + orderId);
-						}
-
-						uploadFileManager.uploadFile({
-							uid: this.userStore.uid,
-							orderId: orderId,
-							filePath: filename,
-							tagId: tagId
-						}, (picInfo) => {
-							events.emit("watchFileUploaded" + orderId);
-
-							// fs.rename(filename,filename.replace(picName, picInfo.data.etag), function(err){
-							// 	if(err){
-							// 	 	throw err;
-							// 	}
-							// 	// console.log('done!');
-							// })
-
-							if (data[orderId][etag] && !data[orderId][etag]['uploaded']) {
-								data[orderId][etag]['uploaded'] = true
-								this.storage.setData(data)
-							}
-						})
-
-					} else if ('下载目录' == paths[paths.length - 3]) {
-						// console.log(filename, '下载目录')
-						if (data[orderId][etag] && !data[orderId][etag]['downloaded']) {
-							data[orderId][etag]['downloaded'] = true
-							this.storage.setData(data)
-							events.emit("watchFileDownloaded" + orderId);
-						}
-					}
+					this.initLocalFiles(filename)
 				} else if (curr.nlink === 0) {
-					// console.log(filename, curr, prev)
-					// f was removed
+					// file remove
+					return
 				} else {
-					// console.log(filename, curr, prev)
-				  // f was changed
+					this.checkLocalFiles(filename)
 				}
 			})
 		}
 	}
 
-	handleEndFix() {
-		this.userStore.endFix({uuid: this.userStore.uuid, orderId: this.order.orderId}, (res) => {
-			if (res.error_code == 0) {
-				this.order.orderStatus = OrderStatus.end
-				this.removeFileListener()
-				this.forceUpdate()
+	initLocalFiles(fileObj) {
+		for (let filename in fileObj) {
+			this.checkLocalFiles(filename)
+		}
+		// fileObj.map((index, name) => {
+		// })
+	}
+
+	checkLocalFiles(filename) {
+		// 排除mac上DS_Store文件
+		if (filename.indexOf("DS_Store") > -1) {
+			return
+		}
+		// console.log(filename, curr, prev)
+		let picName = path.basename(filename)
+		let etag = picName.split('.')[0],
+			suffix = picName.split('.')[1]
+		let paths = os.platform() == "win32" ? filename.split('\\') :  filename.split('/')
+		let orderId = paths[paths.length - 4]
+		let tagId = paths[paths.length - 2].split('-')[1]
+		// console.log(etag, suffix, paths, orderId, tagId)
+
+		let data = this.storage.getData()
+		if (!data[orderId]) {
+			data[orderId] = {}
+		}
+
+		// 新建上传目录时会进入判断
+		if ('上传目录' == paths[paths.length - 3]) {
+			// console.log(paths)
+
+			if (suffix.toLowerCase() != 'jpg' && suffix.toLowerCase() != 'jpeg') {
+				errorHandler.handleErrorCode(10, picName + '格式不正确')
+				return
 			}
-		})
+
+			if (data[orderId][etag]) {
+				if (!data[orderId][etag]['upload']) {
+					data[orderId][etag]['upload'] = true
+					this.storage.setData(data)
+					events.emit("watchDirUploaded" + orderId);
+				} else {
+					if (data[orderId][etag]['uploaded']) {
+						return
+					}
+				}
+			} else {
+				let imageObj = {
+					orderId: orderId,
+					etag: etag,
+					tagID: tagId,
+					upload: true
+				}
+				data[orderId][etag] = imageObj
+				this.storage.setData(data)
+				events.emit("watchDirUploaded" + orderId);
+			}
+
+			this.isUploading ++
+			uploadFileManager.uploadFile({
+				uid: this.userStore.uid,
+				orderId: orderId,
+				filePath: filename,
+				tagId: tagId
+			}, (picInfo, status) => {
+				this.isUploading --
+				events.emit("watchFileUploaded" + orderId);
+
+				if (data[orderId][etag] && !data[orderId][etag]['uploaded']) {
+					data[orderId][etag]['uploaded'] = true
+					this.storage.setData(data)
+				}
+			})
+
+		} else if ('下载目录' == paths[paths.length - 3]) {
+			// console.log(filename, '下载目录')
+			if (data[orderId][etag] && !data[orderId][etag]['downloaded']) {
+				data[orderId][etag]['downloaded'] = true
+				this.storage.setData(data)
+				events.emit("watchFileDownloaded" + orderId);
+			}
+		}
+	}
+
+	handleEndFix() {
+		Modal.confirm({
+			title: '是否要结束修图',
+			content: '结束修图后照片将停止更新下载',
+			onOk() {
+				this.userStore.endFix({uuid: this.userStore.uuid, orderId: this.order.orderId}, (res) => {
+					if (res.error_code == 0) {
+						this.order.orderStatus = OrderStatus.end
+						this.removeFileListener()
+						this.forceUpdate()
+					}
+				})
+			},
+			onCancel() {
+				console.log('取消结束修图')
+			},
+		});
 	}
 
 	handleOpenDownloadDir() {
@@ -348,12 +370,16 @@ export default class OrderCard extends React.Component<PassedProps> {
 						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>已下载 ： </span>
 					<span className="orderValue"
 						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>{this.state.downloadNum+'/'+this.state.downloadTotal}</span>
+					<Icon type="loading" className="fileLoading"
+						style={{ display: (this.order.orderStatus == OrderStatus.started && this.isDownloading) ? 'inline-block' : 'none' }}/>
 				</div>
 				<div className="orderRow">
 					<span className="orderLabel"
 						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>已上传 ： </span>
 					<span className="orderValue"
 						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>{this.state.uploadNum+'/'+this.state.uploadTotal}</span>
+					<Icon type="loading" className="fileLoading"
+						style={{ display: (this.order.orderStatus == OrderStatus.started && this.isUploading) ? 'inline-block' : 'none' }}/>
 				</div>
 			</div>
 			{this.order.orderStatus == OrderStatus.end? <Button disabled={true} className="actionBtn endedBtn">已结束</Button>: null}
