@@ -72,11 +72,12 @@ export default class Home extends BaseView {
 
 	@action fetchOrderList() {
 		this.isLoading = true
+		this.userStore.uuid = '5a56cd93d18f0'
 		this.userStore.getOrderList({isBlock: 1}, (res) => {
 		// this.userStore.getOrderList(null, (res) => {
 			this.isLoading = false
 			if (res.error_code == 0) {
-				console.log(res.data.list)
+				// console.log(res.data.list)
 				this.userStore.orderList = this.userStore.orderList.concat(res.data.list)
 				// console.log('this.userStore.orderList', this.userStore.orderList)
 					

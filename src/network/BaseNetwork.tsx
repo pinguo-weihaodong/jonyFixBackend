@@ -1,8 +1,11 @@
 import JLocalStorage from '../utils/JlocalStorage'
 import DownloadFileManager from '../utils/DownloadFileManager'
 import FileManager from '../utils/FileManager'
+import Events from '../utils/Events'
 import fs from 'fs'
 import electron from 'electron'
+
+const events = Events.sharedInstance()
 
 export default class BaseNetwork {
 
@@ -40,88 +43,90 @@ export default class BaseNetwork {
 
     static COUNTBYTELENGTH: number = 4
 
-        asembleData(data: Buffer) {
-            let buffer = Buffer.from(data)
-            this.cacheBuffer = Buffer.concat([this.cacheBuffer, buffer], this.cacheBuffer.length + buffer.length)
-            this.parseData(this.cacheBuffer)
-        }
+    asembleData(data: Buffer) {
+        let buffer = Buffer.from(data)
+        this.cacheBuffer = Buffer.concat([this.cacheBuffer, buffer], this.cacheBuffer.length + buffer.length)
+        this.parseData(this.cacheBuffer)
+    }
 
-        parseData(dataBuffer: Buffer) {
-            if (dataBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
+    parseData(dataBuffer: Buffer) {
+        if (dataBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
 
-                this.singleResTotalLength = dataBuffer.readUIntBE(0, BaseNetwork.COUNTBYTELENGTH)
+            this.singleResTotalLength = dataBuffer.readUIntBE(0, BaseNetwork.COUNTBYTELENGTH)
+            console.log('this.singleResTotalLength----', this.singleResTotalLength)
+            console.log('dataBuffer.length------------', dataBuffer.length)
+            if (dataBuffer.length >= this.singleResTotalLength) {
+                let singleDataBuffer = dataBuffer.slice(BaseNetwork.COUNTBYTELENGTH, this.singleResTotalLength)
+                let resDataString = singleDataBuffer.toString()
+                let jsonData = JSON.parse(resDataString)
+                console.log('jsonData-----------------', jsonData)
+                this.callbackWithData(jsonData)
 
-                if (dataBuffer.length >= this.singleResTotalLength) {
-                    let singleDataBuffer = dataBuffer.slice(BaseNetwork.COUNTBYTELENGTH, this.singleResTotalLength)
-                    let resDataString = singleDataBuffer.toString()
-                    let jsonData = JSON.parse(resDataString)
-                    this.callbackWithData(jsonData)
-
-                    this.cacheBuffer = dataBuffer.slice(this.singleResTotalLength, dataBuffer.length)
-                    if (this.cacheBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
-                        this.parseData(this.cacheBuffer)
-                    }
+                this.cacheBuffer = dataBuffer.slice(this.singleResTotalLength, dataBuffer.length)
+                if (this.cacheBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
+                    this.parseData(this.cacheBuffer)
                 }
-
             }
+
         }
+    }
 
     connect(url, port) {
         if (!this.so) {
-        var Socket = window['MainSocket']
-        this.so = new Socket({
-            readable: true,
-            writable: true,
-            allowHalfOpen: false
-        })
+            var Socket = window['MainSocket']
+            this.so = new Socket({
+                readable: true,
+                writable: true,
+                allowHalfOpen: false
+            })
 
 
-        this.so.on('data', (res:Buffer) => {
+            this.so.on('data', (res:Buffer) => {
                 this.asembleData(res)
-        })
-            
-        this.so.on('close', () => {
-            this.reset()
-              console.log('socket is close')
-            if (confirm('网络连接已经断开，请重新连接')){
-                    setTimeout(() => {
-                        this.so.destroy()
-                        // this.so = null
-                        // this.connect(this.url, this.port)
-                        window.location.reload()
-                    }, 2000)
-            }
-        })
-            
-        this.so.on('error', (err) => {
-            this.reset()
-              console.log('socket is error:' + err)
-            //   if (confirm('网络连接已经断开，请重新连接')){
-            //       setTimeout(() => {
-            //         this.so = null
-            //         this.connect(this.url, this.port)
-            //       }, 1000)
-            // }
-        })
+            })
+                
+            this.so.on('close', () => {
+                this.reset()
+                console.log('socket is close')
+                if (confirm('网络连接已经断开，请重新连接')){
+                        setTimeout(() => {
+                            this.so.destroy()
+                            // this.so = null
+                            // this.connect(this.url, this.port)
+                            window.location.reload()
+                        }, 2000)
+                }
+            })
+                
+            this.so.on('error', (err) => {
+                this.reset()
+                console.log('socket is error:' + err)
+                //   if (confirm('网络连接已经断开，请重新连接')){
+                //       setTimeout(() => {
+                //         this.so = null
+                //         this.connect(this.url, this.port)
+                //       }, 1000)
+                // }
+            })
 
-        this.so.on('connect', () => {
+            this.so.on('connect', () => {
                 console.log('socket is connected')
                 this.isConnected = true
                 this.prevRequests.map((obj, index) => {
                     this.sendData(obj['method'], obj['data'], obj['callback'], obj['sign'])
                 })
                 this.prevRequests = []
-        })
+            })
 
-        //this.so.setKeepAlive(true)
+            //this.so.setKeepAlive(true)
 
-        //   this.so.setTimeout(15000)
-        //   this.so.on('timeout', () => {
-            console.log('socket timeout')
-        //     this.so.end()
-        //   });
+            //   this.so.setTimeout(15000)
+            //   this.so.on('timeout', () => {
+                console.log('socket timeout')
+            //     this.so.end()
+            //   });
 
-        this.so.connect(port, url)
+            this.so.connect(port, url)
 
         }
 
@@ -155,7 +160,7 @@ export default class BaseNetwork {
     }
 
     callbackWithData(data) {
-        console.log(data)
+        // console.log(data)
         if (data.code == this.methodMap.receivePhoto) {
             if (data.error_code == 0) {
 
@@ -171,9 +176,12 @@ export default class BaseNetwork {
                     if (!storageData[orderId][imageObj.etag] || !storageData[orderId][imageObj.etag]['downloaded']) {
                         storageData[orderId][imageObj.etag] = imageObj
                         storageData[orderId][imageObj.etag]['download'] = true
+
+                        events.emit("watchFileDownload" + orderId);
+
                         let manager = DownloadFileManager.sharedInstance()
                         let fileManger = FileManager.sharedInstance()
-                        let savePath = fileManger.getTagDirPath(imageObj.orderId, imageObj.name) + '/' + imageObj.etag + '.jpg'
+                        let savePath = fileManger.getTagDirPath(imageObj.orderId, imageObj) + '/' + imageObj.etag + '.jpg'
                         manager.downloadFile('https://c360-o2o.c360dn.com/' + imageObj.etag, savePath)
                     }
                 })
