@@ -18,9 +18,9 @@ function createWindow() {
         }
     })
 
-    // win.loadURL(`file://${__dirname}/dist/index.html`);
-    win.loadURL('http://localhost:8080/')
-    win.webContents.openDevTools();
+    win.loadURL(`file://${__dirname}/dist/index.html`);
+    // win.loadURL('http://localhost:8080/')
+    // win.webContents.openDevTools();
     win.on('close', () => {
             win = null;
         })

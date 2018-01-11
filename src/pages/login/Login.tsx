@@ -104,35 +104,35 @@ export default class Login extends BaseView {
     }
     
     @action handleLogin() {
-        this.store.isLogin = true
-        hashHistory.push('home')
-        // if (!(this.phoneNumber && /^1[3|4|5|7|8][0-9]{9}$/.test(this.phoneNumber + ''))) {
-        //     errorHandler.handleErrorCode(1)
-        //     return
-        // }
-        // if (!this.verifyCode) {
-        //     errorHandler.handleErrorCode(2)
-        //     return
-        // }
-        // this.loginLoading = true
-        // this.loginText = "登录中..."
         // this.store.isLogin = true
-        // this.store.login({mobile: this.phoneNumber, code: this.verifyCode}, action((res: LoginType) => {
-        //     this.loginLoading = false
-        //     this.loginText = "登录"
+        // hashHistory.push('home')
+        if (!(this.phoneNumber && /^1[3|4|5|7|8][0-9]{9}$/.test(this.phoneNumber + ''))) {
+            errorHandler.handleErrorCode(1)
+            return
+        }
+        if (!this.verifyCode) {
+            errorHandler.handleErrorCode(2)
+            return
+        }
+        this.loginLoading = true
+        this.loginText = "登录中..."
+        this.store.isLogin = true
+        this.store.login({mobile: this.phoneNumber, code: this.verifyCode}, action((res: LoginType) => {
+            this.loginLoading = false
+            this.loginText = "登录"
 
-        //     if (res.error_code == 0) {
-        //         this.store.userInfo = res.data.info
-        //         this.store.uuid = res.data.uuid
-        //         this.store.uid = res.data.info.uid
-        //         this.store.avatar = res.data.info.avatar
-        //         this.store.nickname = res.data.info.nickname
-        //         this.store.isLogin = true
-        //         hashHistory.push('home')
-        //     } else if (res.error_code) {
-        //         errorHandler.handleErrorCode(res.error_code)
-        //     }
-        // }))
+            if (res.error_code == 0) {
+                this.store.userInfo = res.data.info
+                this.store.uuid = res.data.uuid
+                this.store.uid = res.data.info.uid
+                this.store.avatar = res.data.info.avatar
+                this.store.nickname = res.data.info.nickname
+                this.store.isLogin = true
+                hashHistory.push('home')
+            } else if (res.error_code) {
+                errorHandler.handleErrorCode(res.error_code)
+            }
+        }))
     }
 
     public render() {    

@@ -8,7 +8,7 @@ import { observable, autorun, useStrict, action } from 'mobx'
 import { remote, shell } from 'electron'
 import watchs from 'watch'
 import path from 'path'
-import { Modal, Icon } from 'antd'
+import { Modal, Icon, Switch, Badge, Tag } from 'antd'
 
 import BaseStore from '../../stores/BaseStore'
 import MenuStore from '../../stores/MenuStore'
@@ -47,6 +47,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 	constructor(props) {
 		super()
 		this.order = props.order
+		this.orderShootStatus = this.order.status
 		this.userStore = props.userStore
 		let uid = window.localStorage.getItem('uid')
 		this.storage = JLocalStorage.sharedInstance(uid)
@@ -68,6 +69,9 @@ export default class OrderCard extends React.Component<PassedProps> {
 	userStore: any
 
 	@observable order: any
+	@observable orderShootStatus: number
+
+	@observable downloadLocked: boolean = true
 	@observable isDownloading: number = 0
 	@observable isUploading: number = 0
 
@@ -77,8 +81,9 @@ export default class OrderCard extends React.Component<PassedProps> {
 	@observable downloadTotal: number = 0
 
 	fetchOrderPhotoList() {
-		// console.log("fetchOrderPhotoList--------" + this.order.orderId)
+		// console.log("fetchOrderPhotoList--------", this.order)
 		let orderId = this.order.orderId
+		this.isDownloading = 0
 		this.userStore.getOrderPhotoList({uuid: this.userStore.uuid, orderId: orderId, isBlock: 1}, (res) => {
 			// console.log(res)
 			if (res.error_code == 0) {
@@ -92,6 +97,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 						data[orderId][imageObj.etag] = imageObj
 						data[orderId][imageObj.etag]['download'] = true
 						this.isDownloading ++
+						// console.log('this.isDownloading----', this.isDownloading)
 						let savePath = fileManager.getTagDirPath(orderId, imageObj) + '/' + imageObj.etag + '.jpg'
 						downloadFileManager.downloadFile('https://c360-o2o.c360dn.com/' + imageObj.etag, savePath, (status) => {})
 					}
@@ -169,10 +175,12 @@ export default class OrderCard extends React.Component<PassedProps> {
 	addFileDownloadListener() {
 		events.on("watchFileDownload" + this.order.orderId, () => {
 			this.isDownloading ++
+			// console.log('this.isDownloading----++++++', this.isDownloading)
 			this.downloadTotal += 1
 		})
 		events.on("watchFileDownloaded" + this.order.orderId, () => {
 			this.isDownloading --
+			// console.log('this.isDownloading----   ---', this.isDownloading)
 			this.downloadNum += 1
 		})
 	}
@@ -304,7 +312,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 				})
 			},
 			onCancel() {
-				console.log('取消结束修图')
+				// console.log('取消结束修图')
 			},
 		});
 	}
@@ -317,6 +325,16 @@ export default class OrderCard extends React.Component<PassedProps> {
 		fileManager.openUploadDir(this.order.orderId)
 	}
 
+	onChangeDownloadSwitch(status) {
+		downloadFileManager.handleChangeDownloadLocked()
+		this.downloadLocked = !status
+		if (status) {
+			this.fetchOrderPhotoList()
+		} else {
+			this.isDownloading = 0
+		}
+	}
+
 	public render() {
 		let date = new Date(Number(this.order.startTime) * 1000)
 		let year = date.getFullYear()
@@ -324,7 +342,30 @@ export default class OrderCard extends React.Component<PassedProps> {
 		let day = date.getDate()
 		let hour = date.getHours() > 9 ? date.getHours() : '0' + date.getHours()
 		let min = date.getMinutes() > 9 ? date.getMinutes() : '0' + date.getMinutes()
+
+		let orderShootStatusView
+		switch (this.orderShootStatus) {
+			case 0:
+				orderShootStatusView = <div className="shootStatus">
+										<Tag style={{borderColor: '#2db7f5', color: '#2db7f5'}} >未拍摄</Tag>
+									</div>
+				break;
+			case 1:
+				orderShootStatusView = <div className="shootStatus">
+										<Tag style={{borderColor: '#f50', color: '#f50'}} >拍摄中</Tag>
+									</div>
+				break;
+			case 2:
+				orderShootStatusView = <div className="shootStatus">
+										<Tag style={{borderColor: '#333', color: '#333'}} >拍摄结束</Tag>
+									</div>
+				break;
+			default:
+				orderShootStatusView = <span></span>
+				break;
+		}
 		return <div className="orderWrapper">
+			{ orderShootStatusView }
 			{
 				this.order.orderStatus == OrderStatus.started ?
 				<Button className="refresh" onClick={this.fetchOrderPhotoList.bind(this)}>刷新</Button> : null
@@ -359,12 +400,23 @@ export default class OrderCard extends React.Component<PassedProps> {
 					<span className="orderValue">{this.order.orderId}</span>
 				</div>
 				<div className="orderRow">
-					<span className="orderLabel"
-						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>已下载 ： </span>
+					<Badge dot={this.order.orderStatus == OrderStatus.started && this.downloadTotal > this.downloadNum && this.downloadLocked}>
+						<span className="orderLabel"
+							style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>已下载 ： </span>
+					</Badge>
 					<span className="orderValue"
 						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>{this.downloadNum+'/'+this.downloadTotal}</span>
-					<Icon type="loading" className="fileLoading"
-						style={{ display: (this.order.orderStatus == OrderStatus.started && this.isDownloading) ? 'inline-block' : 'none' }}/>
+					{
+						(((this.order.orderStatus == OrderStatus.started) && this.isDownloading) && !this.downloadLocked) ?
+							<Icon type="loading" className="fileLoading" /> : null
+					}
+					{
+						this.order.orderStatus == OrderStatus.started ?
+						<div className="switch">
+							<Switch checkedChildren="同步中" unCheckedChildren="同步" defaultChecked={false}
+							onChange={this.onChangeDownloadSwitch.bind(this)} />
+						</div> : null
+					}
 				</div>
 				<div className="orderRow">
 					<span className="orderLabel"

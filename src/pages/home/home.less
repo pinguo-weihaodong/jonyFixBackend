@@ -160,6 +160,12 @@ body {
     box-shadow: 0 0 2px 1px #eee;
 }
 
+.shootStatus {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 .refresh {
     position: absolute !important;
     top: 10px;
@@ -203,6 +209,7 @@ body {
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: flex-start;
 }
 
 .orderLabel {
@@ -230,6 +237,12 @@ body {
     margin-left: 12px;
     font-size: 16px;
     color: #c5752d;
+}
+
+.switch {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .orderFileStatus {
@@ -272,11 +285,8 @@ body {
 
 
 @media screen and (min-width: 1440px) {
+    .orderContainer,
     .headerContent {
         width: 1264px !important;
-    }
-
-    .orderContainer {
-        width: 1264px;
     }
 }

@@ -53,13 +53,10 @@ export default class BaseNetwork {
         if (dataBuffer.length > BaseNetwork.COUNTBYTELENGTH) {
 
             this.singleResTotalLength = dataBuffer.readUIntBE(0, BaseNetwork.COUNTBYTELENGTH)
-            console.log('this.singleResTotalLength----', this.singleResTotalLength)
-            console.log('dataBuffer.length------------', dataBuffer.length)
             if (dataBuffer.length >= this.singleResTotalLength) {
                 let singleDataBuffer = dataBuffer.slice(BaseNetwork.COUNTBYTELENGTH, this.singleResTotalLength)
                 let resDataString = singleDataBuffer.toString()
                 let jsonData = JSON.parse(resDataString)
-                console.log('jsonData-----------------', jsonData)
                 this.callbackWithData(jsonData)
 
                 this.cacheBuffer = dataBuffer.slice(this.singleResTotalLength, dataBuffer.length)
@@ -190,18 +187,20 @@ export default class BaseNetwork {
 
         } else {
             var excuteIndex = -1
-            this.callbacks.map((obj, index) => {
+
+            for (var i=0; i<this.callbacks.length; i++) {
+                let obj = this.callbacks[i]
                 if (obj['sign'] == data.request_sign) {
-                    let callback = obj['callback']
-                    callback && callback(data)
-                    excuteIndex = index
+
+                    var callback = obj['callback']
+                    if (callback) {
+                        callback(data)
+                    }
+
+                    excuteIndex = i
                     return
                 }
-            })
-        
-            // if (excuteIndex >= 0) {
-            //     this.callbacks.splice(excuteIndex, 1)
-            // }
+            }
         }
         
     }

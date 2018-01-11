@@ -13,6 +13,8 @@ export default class DownloadFileManager {
 
     private maxCount = 10
 
+    @observable private downloadLocked = true
+
     @observable private currentCount = 0
 
     @observable private currentFile = 0
@@ -30,6 +32,9 @@ export default class DownloadFileManager {
     }
 
     downloadFile(url, path, callback) {
+        if (this.downloadLocked) {
+            return
+        }
 		this.currentCount ++;
 		this.startUploadQueue({
             url: url,
@@ -40,6 +45,9 @@ export default class DownloadFileManager {
     }
 
     startUploadQueue(downloadInfo) {
+        if (this.downloadLocked) {
+            return
+        }
         let _downloadInfo = Object.assign({}, downloadInfo)
         _downloadInfo["check"] = false
         // console.log(downloadInfo.check)
@@ -72,6 +80,14 @@ export default class DownloadFileManager {
         } else {
             this.queue.push(_downloadInfo)
             // console.log("this.queue---", (new Date()).getTime())
+        }
+    }
+
+    // 切换是否允许下载
+    handleChangeDownloadLocked() {
+        this.downloadLocked = !this.downloadLocked
+        if (!this.downloadLocked) {
+            this.queue = []
         }
     }
 }

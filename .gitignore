@@ -41,7 +41,7 @@ out
 
 # Typescript-related generated files
 typings
-src/**/*.js
+# src/**/*.js
 src/**/*.js.map
 
 # E2E test output
