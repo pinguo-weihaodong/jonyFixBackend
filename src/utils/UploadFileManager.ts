@@ -74,7 +74,7 @@ export default class UploadFileManager {
 				"x:uid": uploadInfo.uid,
 				"x:oid": uploadInfo.orderId,
 				"x:banner": '',
-				"x:etag": uploadInfo.key,
+				"x:etagid": uploadInfo.key,
 				"x:size": 1234,
 				"x:tagId": uploadInfo.tagId || 0,
 				"x:width": 1234,

@@ -106,6 +106,7 @@ export default class Login extends BaseView {
     @action handleLogin() {
         // this.store.isLogin = true
         // hashHistory.push('home')
+
         if (!(this.phoneNumber && /^1[3|4|5|7|8][0-9]{9}$/.test(this.phoneNumber + ''))) {
             errorHandler.handleErrorCode(1)
             return

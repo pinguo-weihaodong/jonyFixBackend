@@ -1,367 +1,306 @@
 body,
 html {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    display: flex;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  display: flex;
 }
-
 .container {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
-
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
-
 img {
-    border: none;
-    padding: 0;
-    margin: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
-
 button {
-    border: none;
-    padding: 0;
-    margin: 0;
-    outline: none;
-    cursor: pointer;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  cursor: pointer;
 }
-
 input {
-    border: none;
-    padding: 0;
-    margin: 0;
-    outline: none;
-    text-indent: 10px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  text-indent: 10px;
 }
-
 input::-webkit-input-placeholder {
-    color: #aaa;
-    opacity: 1;
+  color: #aaa;
+  opacity: 1;
 }
-
 .clear {
-    clear: both;
+  clear: both;
 }
-
 .button {
-    position: relative;
-    cursor: pointer;
+  position: relative;
+  cursor: pointer;
 }
-
 .btnMask {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
 }
-
 .hoverStyle {
-    background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.25);
 }
-
 .clickStyle {
-    background: rgba(255, 255, 255, 0);
+  background: rgba(255, 255, 255, 0);
 }
-
 .tipWrapper {
-    position: relative;
+  position: relative;
 }
-
 .tipText {
-    position: absolute;
-    top: 24px;
-    left: 0;
-    padding: 5px 10px;
-    font-size: 14px;
-    border-radius: 5px;
-    background: rgba(0, 0, 0, 0.8);
-    overflow: visible;
-    color: #fff;
-    z-index: 2;
+  position: absolute;
+  top: 24px;
+  left: 0;
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.8);
+  overflow: visible;
+  color: #fff;
+  z-index: 2;
 }
-
 .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: 124px;
-    align-self: flex-start;
-    background: #000;
-    z-index: 2;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 124px;
+  align-self: flex-start;
+  background: #000;
+  z-index: 2;
 }
-
 .header .headerContent {
-    width: 960px;
-    height: 64px;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  width: 960px;
+  height: 64px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-
 .header .headerContent .logo {
-    height: 36px;
+  height: 36px;
 }
-
 .header .headerContent .userInfo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-
 .header .headerContent .userInfo .userAvatar {
-    display: block;
-    margin-right: 5px;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
+  display: block;
+  margin-right: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
 }
-
 .header .headerContent .userInfo .userName {
-    font-size: 14px;
-    color: #fff;
-    line-height: 64px;
+  font-size: 14px;
+  color: #fff;
+  line-height: 64px;
 }
-
 .header .headerContent .userInfo .logout {
-    width: 90px;
-    height: 36px;
-    margin-left: 40px;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 4px;
-    font-size: 14px;
-    color: #ccc;
-    border: 1px solid #999;
+  width: 90px;
+  height: 36px;
+  margin-left: 40px;
+  line-height: 36px;
+  text-align: center;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #ccc;
+  border: 1px solid #999;
 }
-
 .header .title {
-    position: relative;
-    width: 100%;
-    height: 60px;
-    font-size: 18px;
-    color: #000;
-    text-align: center;
-    line-height: 60px;
-    box-shadow: 0 2px 5px 2px #e1e1e1;
-    background: #fff;
+  position: relative;
+  width: 100%;
+  height: 60px;
+  font-size: 18px;
+  color: #000;
+  text-align: center;
+  line-height: 60px;
+  box-shadow: 0 2px 5px 2px #e1e1e1;
+  background: #fff;
 }
-
 body {
-    background-image: url(../../assets/images/content_bg.jpg);
-    background-size: cover;
-    background-position: center;
+  background-image: url(../../assets/images/content_bg.jpg);
+  background-size: cover;
+  background-position: center;
 }
-
 .container {
-    padding-top: 124px;
+  padding-top: 124px;
 }
-
 .mainContainer {
-    position: relative;
-    width: 100%;
-    padding: 20px 0;
-    justify-content: center;
-    align-items: center;
-    background-image: url(../../assets/images/content_bg.jpg);
-    background-size: cover;
-    background-position: center;
+  position: relative;
+  width: 100%;
+  padding: 20px 0;
+  justify-content: center;
+  align-items: center;
+  background-image: url(../../assets/images/content_bg.jpg);
+  background-size: cover;
+  background-position: center;
 }
-
 .orderContainer {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    width: 960px;
-    padding-left: 38px;
-    padding-bottom: 38px;
-    margin: auto;
-    background: #fff;
-    box-shadow: 0 4px 5px 1px #eee;
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  width: 960px;
+  padding-left: 38px;
+  padding-bottom: 38px;
+  margin: auto;
+  background: #fff;
+  box-shadow: 0 4px 5px 1px #eee;
 }
-
 .loading {
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: auto;
-    text-align: center;
-    font-size: 14px;
-    color: #666;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
 }
-
 .emptyWrapper {
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
-
 .emptyPic {
-    width: 160px;
+  width: 160px;
 }
-
 .emptyText {
-    display: block;
-    margin-top: -10px;
-    text-align: center;
-    font-size: 15px;
-    color: #999;
-    line-height: 40px;
+  display: block;
+  margin-top: -10px;
+  text-align: center;
+  font-size: 15px;
+  color: #999;
+  line-height: 40px;
 }
-
 .orderWrapper {
-    position: relative;
-    width: 270px;
-    height: 380px;
-    margin-top: 36px;
-    margin-right: 36px;
-    border: 1px solid #eee;
-    border-radius: 3px;
-    box-shadow: 0 0 2px 1px #eee;
+  position: relative;
+  width: 270px;
+  height: 380px;
+  margin-top: 36px;
+  margin-right: 36px;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  box-shadow: 0 0 2px 1px #eee;
 }
-
 .shootStatus {
-    position: absolute;
-    top: 0;
-    left: 0;
+  position: absolute;
+  top: 10px;
+  right: 0;
 }
-
-.refresh {
-    position: absolute !important;
-    top: 10px;
-    right: 10px;
-    font-size: 12px;
-    color: #999;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    text-align: center;
-    line-height: 40px;
-    background: #fff;
-    cursor: pointer;
-}
-
 .orderBanner {
-    display: block;
-    width: 100%;
-    height: 160px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+  display: block;
+  width: 100%;
+  height: 160px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
 }
-
 .orderInfo {
-    padding: 10px 20px;
-    background: #fff;
-    border-top: 0;
+  padding: 10px 20px;
+  background: #fff;
+  border-top: 0;
 }
-
 .orderTheme {
-    display: block;
-    font-size: 18px;
-    color: #000;
-    line-height: 34px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  display: block;
+  font-size: 18px;
+  color: #000;
+  line-height: 34px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
 .orderRow {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
 }
-
 .orderLabel {
-    font-size: 13px;
-    color: #666;
-    line-height: 20px;
+  font-size: 13px;
+  color: #666;
+  line-height: 20px;
 }
-
 .orderValueWrapper {
-    width: 180px;
+  width: 180px;
 }
-
 .orderValue {
-    display: block;
-    max-width: 180px;
-    font-size: 13px;
-    color: #666;
-    line-height: 20px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  display: block;
+  max-width: 180px;
+  font-size: 13px;
+  color: #666;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
 .fileLoading {
-    margin-left: 12px;
-    font-size: 16px;
-    color: #c5752d;
+  margin-left: 12px;
+  font-size: 16px;
+  color: #c5752d;
 }
-
 .switch {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
-
 .orderFileStatus {
-    color: #c5752d;
+  color: #c5752d;
 }
-
 .actionBtn {
-    margin: 5px auto;
-    width: 120px;
-    height: 36px;
-    border-radius: 5px;
-    font-size: 12px;
-    color: #333;
-    line-height: 36px;
-    text-align: center;
-    background: #f5d822;
+  margin: 5px auto;
+  width: 120px;
+  height: 36px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #333;
+  line-height: 36px;
+  text-align: center;
+  background: #f5d822;
+  border-color: #f5d822;
 }
-
 .actionBtnWrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
 }
-
 .endedBtn {
-    background: #ccc;
-    color: #fff;
+  background: #ccc;
+  color: #fff;
 }
-
 .endBtn {
-    background: #fff;
-    border: 1px solid #ccc;
+  background: #fff;
+  border: 1px solid #ccc;
 }
-
 .startedBtn {
-    width: 75px;
+  width: 75px;
 }
-
 @media screen and (min-width: 1440px) {
-    .orderContainer,
-    .headerContent {
-        width: 1264px !important;
-    }
+  .orderContainer,
+  .headerContent {
+    width: 1264px !important;
+  }
 }

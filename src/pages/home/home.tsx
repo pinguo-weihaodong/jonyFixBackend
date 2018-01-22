@@ -72,6 +72,7 @@ export default class Home extends BaseView {
 
 	@action fetchOrderList() {
 		this.isLoading = true
+		// this.userStore.uuid = '5a659580ede0f'
 		// this.userStore.uuid = '5a56cd93d18f0'
 		this.userStore.getOrderList({isBlock: 1}, (res) => {
 		// this.userStore.getOrderList(null, (res) => {

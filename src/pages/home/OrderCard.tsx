@@ -8,13 +8,11 @@ import { observable, autorun, useStrict, action } from 'mobx'
 import { remote, shell } from 'electron'
 import watchs from 'watch'
 import path from 'path'
-import { Modal, Icon, Switch, Badge, Tag } from 'antd'
+import { Tooltip, Modal, Icon, Switch, Badge, Tag, Button } from 'antd'
 
 import BaseStore from '../../stores/BaseStore'
 import MenuStore from '../../stores/MenuStore'
 import UserStore from '../../stores/UserStore'
-import Button from '../../components/Button'
-import TextTip from '../../components/TextTip'
 import JLocalStorage from '../../utils/JlocalStorage'
 import FileManager from '../../utils/FileManager'
 import DownloadFileManager from '../../utils/DownloadFileManager'
@@ -58,10 +56,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 	}
 
 	state = {
-		uploadNum: 0,
-		uploadTotal: 0,
-		downloadNum: 0,
-		downloadTotal: 0
 	}
 
 	storage: JLocalStorage
@@ -71,6 +65,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 	@observable order: any
 	@observable orderShootStatus: number
 
+	@observable idRefreshing: boolean = false
 	@observable downloadLocked: boolean = true
 	@observable isDownloading: number = 0
 	@observable isUploading: number = 0
@@ -79,6 +74,36 @@ export default class OrderCard extends React.Component<PassedProps> {
 	@observable uploadTotal: number = 0
 	@observable downloadNum: number = 0
 	@observable downloadTotal: number = 0
+
+	refreshOrder() {
+		// this.fetchOrderPhotoList()
+		let startTimestamp = (new Date()).getTime()
+		let orderList= []
+		this.idRefreshing = true
+		this.userStore.getOrderList({isBlock: 1}, (res) => {
+			let endTimestamp = (new Date()).getTime()
+			let diffTime = endTimestamp - startTimestamp
+
+			if (diffTime < 1000) {
+				setTimeout(() => {
+					this.idRefreshing = false
+				}, 1000 - diffTime);
+			}
+
+			if (res.error_code == 0) {
+				orderList = orderList.concat(res.data.list)
+
+				orderList.forEach(orderInfo => {
+					if (this.order.orderId == orderInfo.orderId) {
+						if (this.orderShootStatus != orderInfo.status) {
+							this.orderShootStatus = orderInfo.status
+						}
+					}
+				})
+
+			}
+		})
+	}
 
 	fetchOrderPhotoList() {
 		// console.log("fetchOrderPhotoList--------", this.order)
@@ -165,9 +190,14 @@ export default class OrderCard extends React.Component<PassedProps> {
 	  
 	addFileUploadListener() {
 		events.on("watchDirUploaded" + this.order.orderId, () => {
+			this.isUploading ++
 			this.uploadTotal += 1
 		})
 		events.on("watchFileUploaded" + this.order.orderId, () => {
+			this.isUploading --
+			if (this.uploadNum == this.uploadTotal) {
+				this.isDownloading = 0
+			}
 			this.uploadNum += 1
 		})
 	}
@@ -180,6 +210,9 @@ export default class OrderCard extends React.Component<PassedProps> {
 		})
 		events.on("watchFileDownloaded" + this.order.orderId, () => {
 			this.isDownloading --
+			if (this.downloadNum == this.downloadTotal) {
+				this.isDownloading = 0
+			}
 			// console.log('this.isDownloading----   ---', this.isDownloading)
 			this.downloadNum += 1
 		})
@@ -272,14 +305,12 @@ export default class OrderCard extends React.Component<PassedProps> {
 				events.emit("watchDirUploaded" + orderId);
 			}
 
-			this.isUploading ++
 			uploadFileManager.uploadFile({
 				uid: this.userStore.uid,
 				orderId: orderId,
 				filePath: filename,
 				tagId: tagId
 			}, (picInfo, status) => {
-				this.isUploading --
 				events.emit("watchFileUploaded" + orderId);
 
 				if (data[orderId][etag] && !data[orderId][etag]['uploaded']) {
@@ -346,18 +377,22 @@ export default class OrderCard extends React.Component<PassedProps> {
 		let orderShootStatusView
 		switch (this.orderShootStatus) {
 			case 0:
-				orderShootStatusView = <div className="shootStatus">
-										<Tag style={{borderColor: '#2db7f5', color: '#2db7f5'}} >未拍摄</Tag>
+				orderShootStatusView = <div className="shootStatus" onClick={this.refreshOrder.bind(this)}>
+										<Button icon="reload" loading={this.idRefreshing} style={{borderColor: '#2db7f5', color: '#2db7f5'}}>
+											未拍摄
+										</Button>
 									</div>
 				break;
 			case 1:
-				orderShootStatusView = <div className="shootStatus">
-										<Tag style={{borderColor: '#f50', color: '#f50'}} >拍摄中</Tag>
+				orderShootStatusView = <div className="shootStatus" onClick={this.refreshOrder.bind(this)}>
+										<Button icon="reload" loading={this.idRefreshing} style={{borderColor: '#f50', color: '#f50'}}>
+											拍摄中
+										</Button>
 									</div>
 				break;
 			case 2:
 				orderShootStatusView = <div className="shootStatus">
-										<Tag style={{borderColor: '#333', color: '#333'}} >拍摄结束</Tag>
+										<Button disabled={true} style={{borderColor: '#333', color: '#333'}} >拍摄结束</Button>
 									</div>
 				break;
 			default:
@@ -366,10 +401,6 @@ export default class OrderCard extends React.Component<PassedProps> {
 		}
 		return <div className="orderWrapper">
 			{ orderShootStatusView }
-			{
-				this.order.orderStatus == OrderStatus.started ?
-				<Button className="refresh" onClick={this.fetchOrderPhotoList.bind(this)}>刷新</Button> : null
-			}
 			<img className="orderBanner" src={this.order.banner} alt=""
 				style={{
 					backgroundImage:'url('+ this.order.banner +')',
@@ -377,9 +408,9 @@ export default class OrderCard extends React.Component<PassedProps> {
 				}}/>
 			<div className="orderInfo">
 				{this.order.title.length >= 13 ?
-					<TextTip tip={this.order.title}>
+					<Tooltip placement="topLeft" title={this.order.title}>
 						<span className="orderTheme">{this.order.title}</span>
-					</TextTip> :
+					</Tooltip> :
 					<span className="orderTheme">{this.order.title}</span>
 				}
 				<div className="orderRow">
@@ -389,9 +420,9 @@ export default class OrderCard extends React.Component<PassedProps> {
 				<div className="orderRow">
 					<span className="orderLabel">地点 ： </span>
 					{this.order.place.length >= 13 ?
-						<TextTip className="orderValueWrapper" tip={this.order.place}>
+						<Tooltip placement="topLeft" title={this.order.title}>
 							<span className="orderValue">{this.order.place}</span>
-						</TextTip> :
+						</Tooltip> :
 						<span className="orderValue">{this.order.place}</span>
 					}
 				</div>
@@ -407,7 +438,7 @@ export default class OrderCard extends React.Component<PassedProps> {
 					<span className="orderValue"
 						style={{color: this.order.orderStatus == OrderStatus.end ? "#aaa": "#c5752d"}}>{this.downloadNum+'/'+this.downloadTotal}</span>
 					{
-						(((this.order.orderStatus == OrderStatus.started) && this.isDownloading) && !this.downloadLocked) ?
+						(this.order.orderStatus == OrderStatus.started && this.isDownloading && !this.downloadLocked) ?
 							<Icon type="loading" className="fileLoading" /> : null
 					}
 					{
@@ -427,13 +458,23 @@ export default class OrderCard extends React.Component<PassedProps> {
 						style={{ display: (this.order.orderStatus == OrderStatus.started && this.isUploading) ? 'inline-block' : 'none' }}/>
 				</div>
 			</div>
-			{this.order.orderStatus == OrderStatus.end? <Button disabled={true} className="actionBtn endedBtn">已结束</Button>: null}
-			{this.order.orderStatus == OrderStatus.unStart? <Button className="actionBtn startBtn" onClick={this.handleCreateDir.bind(this)}>开始修图</Button>: null}
-			{this.order.orderStatus == OrderStatus.started? <div className="actionBtnWrapper">
-				<Button className="actionBtn startedBtn" onClick={this.handleUploadDir.bind(this)}>上传目录</Button>
-				<Button className="actionBtn startedBtn" onClick={this.handleOpenDownloadDir.bind(this)}>下载目录</Button>
-				<Button className="actionBtn startedBtn endBtn" onClick={this.handleEndFix.bind(this)}>结束修图</Button>
-			</div>: null}
+			{
+				this.order.orderStatus == OrderStatus.end ? <div className="actionBtnWrapper">
+					<Button disabled={true} className="actionBtn endedBtn">已结束</Button>
+				</div> : null
+			}
+			{
+				this.order.orderStatus == OrderStatus.unStart ? <div className="actionBtnWrapper">
+					<Button className="actionBtn startBtn" onClick={this.handleCreateDir.bind(this)}>开始修图</Button>
+				</div> : null
+			}
+			{
+				this.order.orderStatus == OrderStatus.started ? <div className="actionBtnWrapper">
+					<Button className="actionBtn startedBtn" onClick={this.handleUploadDir.bind(this)}>上传目录</Button>
+					<Button className="actionBtn startedBtn" onClick={this.handleOpenDownloadDir.bind(this)}>下载目录</Button>
+					<Button className="actionBtn startedBtn endBtn" onClick={this.handleEndFix.bind(this)}>结束修图</Button>
+				</div> : null
+			}
 		</div>
 	}
 }
